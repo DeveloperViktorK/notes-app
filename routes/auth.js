@@ -3,6 +3,7 @@ var router = express.Router();
 const User = require("../models/user");
 const { validationResult } = require("express-validator");
 const { registerValidators } = require("../lib/middleware/reg-validation");
+const { loginValidators } = require("../lib/middleware/login-validation");
 const cryptoHelp = require("../lib/crypto-helper");
 const jwt = require("jsonwebtoken");
 const auth = require("../lib/middleware/auth.middleware");
@@ -39,8 +40,16 @@ router.post("/register", registerValidators, async function (req, res, next) {
 });
 
 // Check auth
-router.post("/login", async function (req, res, next) {
+router.post("/login", loginValidators, async function (req, res, next) {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: "Ошибка аутентификации",
+        error: errors.array()[0].msg,
+      });
+    }
+
     const { email, password } = req.body;
     const user = await User.findAll({
       where: { email },

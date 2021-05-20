@@ -12,7 +12,6 @@ const { getPagination } = require("../lib/pagination");
 router.get("/", auth, async function (req, res, next) {
   try {
     // notes?page=1&size=5
-
     const { page, size } = req.query;
     const { limit, offset } = getPagination(page, size);
 
@@ -29,15 +28,18 @@ router.get("/", auth, async function (req, res, next) {
 });
 
 // Get note
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   try {
-    // req.email не передаётся без middleware auth
-    const note = await Notes.find(+req.params.id);
-    if (note && note.owner !== (req.email || note.owner) && !note.shared) {
-      return res.status(403).json({ message: "Нет доступа" });
+    if (!Number.isInteger(+req.params.id)) {
+      return res.status(400).json("");
     }
+    const note = await Notes.find(req.params.id);
     if (note) {
-      return res.status(200).json({ note: note.toJSON() });
+      if (note && (note.shared || note.owner === req.email)) {
+        return res.status(200).json({ note: note.toJSON() });
+      } else {
+        return res.status(403).json({ message: "Нет доступа" });
+      }
     } else {
       return res
         .status(204)
@@ -74,7 +76,10 @@ router.post("/", auth, async (req, res) => {
 // Update note
 router.put("/:id", auth, async (req, res) => {
   try {
-    const note = await Notes.find(+req.params.id);
+    if (!Number.isInteger(+req.params.id)) {
+      return res.status(400).json("");
+    }
+    const note = await Notes.find(req.params.id);
     if (note) {
       note.noteTitle = req.body.noteTitle;
       note.note = req.body.note;
@@ -101,7 +106,10 @@ router.put("/:id", auth, async (req, res) => {
 // Remove note
 router.delete("/:id", auth, async (req, res) => {
   try {
-    const note = await Notes.find(+req.params.id);
+    if (!Number.isInteger(+req.params.id)) {
+      return res.status(400).json("");
+    }
+    const note = await Notes.find(req.params.id);
     if (note.owner === req.email) {
       return res.status(403).json({ message: "Заметка не удалена" });
     }
