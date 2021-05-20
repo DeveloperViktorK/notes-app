@@ -33,7 +33,7 @@ router.get("/:id", auth, async (req, res) => {
     if (!Number.isInteger(+req.params.id)) {
       return res.status(400).json("");
     }
-    const note = await Notes.find(req.params.id);
+    const note = await Notes.find(+req.params.id);
     if (note) {
       if (note && (note.shared || note.owner === req.email)) {
         return res.status(200).json({ note: note.toJSON() });
@@ -79,7 +79,7 @@ router.put("/:id", auth, async (req, res) => {
     if (!Number.isInteger(+req.params.id)) {
       return res.status(400).json("");
     }
-    const note = await Notes.find(req.params.id);
+    const note = await Notes.find(+req.params.id);
     if (note) {
       note.noteTitle = req.body.noteTitle;
       note.note = req.body.note;
@@ -109,7 +109,7 @@ router.delete("/:id", auth, async (req, res) => {
     if (!Number.isInteger(+req.params.id)) {
       return res.status(400).json("");
     }
-    const note = await Notes.find(req.params.id);
+    const note = await Notes.find(+req.params.id);
     if (note.owner === req.email) {
       return res.status(403).json({ message: "Заметка не удалена" });
     }
