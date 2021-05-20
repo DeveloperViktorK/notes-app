@@ -6,6 +6,7 @@ const fs = require("fs");
 
 const notesRouter = require("./routes/notes");
 const authRouter = require("./routes/auth");
+var cors = require("cors");
 
 var app = express();
 
@@ -22,6 +23,14 @@ switch (app.get("env")) {
     break;
 }
 
+var corsOptions = {
+  origin: "*",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
